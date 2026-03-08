@@ -22,22 +22,28 @@ GLFWbool _glfwInitVulkan(int mode)
     VkExtensionProperties* ep;
     uint32_t i, count;
 
+    _glfwInputError(GLFW_API_UNAVAILABLE, "Vulkan: gz init");
     if (_glfw.vk.available)
         return GLFW_TRUE;
 
 #if !defined(_GLFW_VULKAN_STATIC)
 #if defined(_GLFW_VULKAN_LIBRARY)
     _glfw.vk.handle = _glfw_dlopen(_GLFW_VULKAN_LIBRARY);
+    _glfwInputError(GLFW_API_UNAVAILABLE, "Vulkan: gz 31");
 #elif defined(_GLFW_WIN32)
     _glfw.vk.handle = _glfw_dlopen("vulkan-1.dll");
+    _glfwInputError(GLFW_API_UNAVAILABLE, "Vulkan: gz 34");
 #elif defined(_GLFW_COCOA)
     _glfw.vk.handle = _glfw_dlopen("libvulkan.1.dylib");
+    _glfwInputError(GLFW_API_UNAVAILABLE, "Vulkan: gz 37");
     if (!_glfw.vk.handle)
         _glfw.vk.handle = _glfwLoadLocalVulkanLoaderNS();
 #elif defined(_GLFW_FCL)
     _glfw.vk.handle = _glfw_dlopen("libvulkan.so");
+    _glfwInputError(GLFW_API_UNAVAILABLE, "Vulkan: gz 42");
 #else
     _glfw.vk.handle = _glfw_dlopen("libvulkan.so.1");
+    _glfwInputError(GLFW_API_UNAVAILABLE, "Vulkan: gz 45");
 #endif
     if (!_glfw.vk.handle)
     {
