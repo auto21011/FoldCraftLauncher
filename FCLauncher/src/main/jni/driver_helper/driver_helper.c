@@ -14,6 +14,87 @@
 #include "driver_helper.h"
 #include "nsbypass.h"
 #include "glfw/include/gl.h"
+#include <vulkan/vulkan.h>
+
+void testVulkan(void *libVulkan);
+
+void testVulkan(void *libVulkan) {
+    // 获取 Vulkan 函数指针
+    PFN_vkCreateInstance vkCreateInstance =
+        (PFN_vkCreateInstance)dlsym(libVulkan, "vkCreateInstance");
+    PFN_vkDestroyInstance vkDestroyInstance =
+        (PFN_vkDestroyInstance)dlsym(libVulkan, "vkDestroyInstance");
+    PFN_vkEnumeratePhysicalDevices vkEnumeratePhysicalDevices =
+        (PFN_vkEnumeratePhysicalDevices)dlsym(libVulkan, "vkEnumeratePhysicalDevices");
+    PFN_vkGetPhysicalDeviceProperties vkGetPhysicalDeviceProperties =
+        (PFN_vkGetPhysicalDeviceProperties)dlsym(libVulkan, "vkGetPhysicalDeviceProperties");
+
+    // 应用程序信息
+    VkApplicationInfo appInfo = {0};
+    appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+    appInfo.pApplicationName = "AdrenoToolsExample";
+    appInfo.applicationVersion = 1;
+    appInfo.pEngineName = "AdrenoToolsExample";
+    appInfo.engineVersion = 1;
+    appInfo.apiVersion = VK_API_VERSION_1_0;
+
+    // 实例创建信息
+    VkInstanceCreateInfo instanceCreateInfo = {0};
+    instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+    instanceCreateInfo.pApplicationInfo = &appInfo;
+
+    VkInstance instance;
+    VkResult result = vkCreateInstance(&instanceCreateInfo, NULL, &instance);
+    if (result != VK_SUCCESS) {
+        printf("vkCreateInstance failed: %d", result);
+        return;
+    }
+
+    // 查询物理设备数量
+    uint32_t numDevices = 1u;
+    vkEnumeratePhysicalDevices(instance, &numDevices, NULL);
+    if (numDevices == 0) {
+        printf( "NO VK DEVICES!\n");
+    } else {
+        printf( "YES VK DEVICES!\n");
+
+        // 分配数组存储物理设备句柄
+        VkPhysicalDevice *pd = (VkPhysicalDevice*)malloc(numDevices * sizeof(VkPhysicalDevice));
+        if (!pd) {
+            printf( "malloc failed");
+            vkDestroyInstance(instance, NULL);
+            return;
+        }
+
+        vkEnumeratePhysicalDevices(instance, &numDevices, pd);
+
+        for (uint32_t i = 0u; i < numDevices; ++i) {
+            VkPhysicalDeviceProperties deviceProps;
+            vkGetPhysicalDeviceProperties(pd[i], &deviceProps);
+
+            // 解析驱动版本（与 SaschaWillems 的 VulkanCapsViewer 一致）
+            const uint32_t driverVersionMajor = (deviceProps.driverVersion >> 22u) & 0x3ff;
+            const uint32_t driverVersionMinor = (deviceProps.driverVersion >> 12u) & 0x3ff;
+            const uint32_t driverVersionRelease = (deviceProps.driverVersion) & 0xfff;
+
+            printf( "Device %u: %s.\n"
+                                "Vulkan API %u.%u.%u\n"
+                                "Driver Version: %u.%u.%u (%u)\n",
+                                i, deviceProps.deviceName,
+                                VK_API_VERSION_MAJOR(deviceProps.apiVersion),
+                                VK_API_VERSION_MINOR(deviceProps.apiVersion),
+                                VK_API_VERSION_PATCH(deviceProps.apiVersion),
+                                driverVersionMajor, driverVersionMinor, driverVersionRelease,
+                                deviceProps.driverVersion);
+
+        }
+
+        free(pd);
+    }
+
+    vkDestroyInstance(instance, NULL);
+}
+
 
 //#define ADRENO_POSSIBLE
 #ifdef ADRENO_POSSIBLE
@@ -122,6 +203,7 @@ static void set_vulkan_ptr(void* ptr) {
     char envval[64];
     sprintf(envval, "%"PRIxPTR, (uintptr_t)ptr);
     setenv("VULKAN_PTR", envval, 1);
+    testVulkan(ptr);
 }
 
 void load_vulkan() {
