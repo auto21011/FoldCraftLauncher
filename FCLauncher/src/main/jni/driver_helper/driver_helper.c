@@ -163,6 +163,7 @@ void* loadTurnipVulkan() {
 
     void* turnip_driver_handle = linker_ns_dlopen("libvulkan_freedreno.so", RTLD_LOCAL | RTLD_NOW);
     if (!turnip_driver_handle) {
+        printf("load libvulkan_freedreno.so failed:\n%s\n", dlerror());
         dlclose(linkerhook);
         return NULL;
     }
@@ -188,6 +189,7 @@ void* loadTurnipVulkan() {
 
     void* libvulkan = linker_ns_dlopen_unique(cache_dir, "libvulkan.so", RTLD_LOCAL | RTLD_NOW);
     if (!libvulkan) {
+        printf("load libvulkan.so failed:\n%s\n", dlerror());
         dlclose(dl_android);
         dlclose(linkerhook);
         dlclose(turnip_driver_handle);
