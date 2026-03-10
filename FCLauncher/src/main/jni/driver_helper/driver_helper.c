@@ -2,7 +2,9 @@
 // Created by Vera-Firefly on 17.01.2025.
 //
 
+#ifndef TERMUX_TEST
 #include <EGL/egl.h>
+#endif
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdint.h>
@@ -13,12 +15,15 @@
 #include <android/dlext.h>
 #include "driver_helper.h"
 #include "nsbypass.h"
+#ifndef TERMUX_TEST
 #include "glfw/include/gl.h"
+#endif
 #include <vulkan/vulkan.h>
 
 void testVulkan(void *libVulkan);
 
 void testVulkan(void *libVulkan) {
+    printf("testVulkan: %d\n", __LINE__);
     // 获取 Vulkan 函数指针
     PFN_vkCreateInstance vkCreateInstance =
         (PFN_vkCreateInstance)dlsym(libVulkan, "vkCreateInstance");
@@ -29,6 +34,12 @@ void testVulkan(void *libVulkan) {
     PFN_vkGetPhysicalDeviceProperties vkGetPhysicalDeviceProperties =
         (PFN_vkGetPhysicalDeviceProperties)dlsym(libVulkan, "vkGetPhysicalDeviceProperties");
 
+    printf("libVulkan:                     %p\n", libVulkan);
+    printf("vkCreateInstance:              %p\n", vkCreateInstance);
+    printf("vkDestroyInstance:             %p\n", vkDestroyInstance);
+    printf("vkEnumeratePhysicalDevices:    %p\n", vkEnumeratePhysicalDevices);
+    printf("vkGetPhysicalDeviceProperties: %p\n", vkGetPhysicalDeviceProperties);
+    printf("testVulkan: %d\n", __LINE__);
     // 应用程序信息
     VkApplicationInfo appInfo = {0};
     appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -39,12 +50,15 @@ void testVulkan(void *libVulkan) {
     appInfo.apiVersion = VK_API_VERSION_1_0;
 
     // 实例创建信息
+    printf("testVulkan: %d\n", __LINE__);
     VkInstanceCreateInfo instanceCreateInfo = {0};
     instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
     instanceCreateInfo.pApplicationInfo = &appInfo;
 
+    printf("testVulkan: %d\n", __LINE__);
     VkInstance instance;
     VkResult result = vkCreateInstance(&instanceCreateInfo, NULL, &instance);
+    printf("testVulkan: %d\n", __LINE__);
     if (result != VK_SUCCESS) {
         printf("vkCreateInstance failed: %d", result);
         return;
@@ -53,6 +67,7 @@ void testVulkan(void *libVulkan) {
     // 查询物理设备数量
     uint32_t numDevices = 1u;
     vkEnumeratePhysicalDevices(instance, &numDevices, NULL);
+    printf("testVulkan: %d\n", __LINE__);
     if (numDevices == 0) {
         printf( "NO VK DEVICES!\n");
     } else {
@@ -99,6 +114,7 @@ void testVulkan(void *libVulkan) {
 //#define ADRENO_POSSIBLE
 #ifdef ADRENO_POSSIBLE
 
+#ifndef TERMUX_TEST
 bool checkAdrenoGraphics() {
     EGLDisplay eglDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
     if (eglDisplay == EGL_NO_DISPLAY || eglInitialize(eglDisplay, NULL, NULL) != EGL_TRUE) 
@@ -143,10 +159,13 @@ bool checkAdrenoGraphics() {
 
     return is_adreno;
 }
+#endif
 
 void* loadTurnipVulkan() {
+#ifndef TERMUX_TEST
     if (!checkAdrenoGraphics())
         return NULL;
+#endif
 
     const char* native_dir = getenv("DRIVER_PATH");
     const char* cache_dir = getenv("TMPDIR");
