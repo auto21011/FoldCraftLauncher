@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import android.os.Environment;
 
 public class FCLauncher {
 
@@ -229,6 +230,17 @@ public class FCLauncher {
         }
         if (config.isPojavBigCore()) {
             envMap.put("POJAV_BIG_CORE_AFFINITY", "1");
+        }
+        File externalFilesDir = config.getContext().getExternalFilesDir(null);
+        if (externalFilesDir == null) {
+            externalFilesDir = new File(Environment.getExternalStorageDirectory(), "Android/data/" + config.getContext().getPackageName() + "/files");
+        }
+        if (externalFilesDir != null) {
+            envMap.put("EXT_LIB_PATH", externalFilesDir.getAbsolutePath() + "/lib");
+        }
+        File dynamicLibDir = config.getContext().getDir("lib", 0);
+        if (dynamicLibDir != null) {
+            envMap.put("DYNAMIC_NATIVE_LIB_PATH", dynamicLibDir.getAbsolutePath());
         }
     }
 

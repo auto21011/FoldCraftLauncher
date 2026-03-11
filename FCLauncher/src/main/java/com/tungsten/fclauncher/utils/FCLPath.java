@@ -10,6 +10,7 @@ public class FCLPath {
     public static Context CONTEXT;
 
     public static String NATIVE_LIB_DIR;
+    public static String DYNAMIC_NATIVE_LIB_DIR;
 
     public static String LOG_DIR;
     public static String CACHE_DIR;
@@ -32,6 +33,7 @@ public class FCLPath {
     public static String CONTROLLER_DIR;
 
     public static String PRIVATE_COMMON_DIR;
+    public static String PRIVATE_EXT_LIB_PATH_DIR;
     public static String SHARED_COMMON_DIR = Environment.getExternalStorageDirectory().getAbsolutePath() + "/FCL/.minecraft";
 
     public static String AUTHLIB_INJECTOR_PATH;
@@ -45,6 +47,7 @@ public class FCLPath {
         CONTEXT = context;
 
         NATIVE_LIB_DIR = context.getApplicationInfo().nativeLibraryDir;
+        DYNAMIC_NATIVE_LIB_DIR = context.getDir("lib", 0).getAbsolutePath();
 
         LOG_DIR = Environment.getExternalStorageDirectory().getAbsolutePath() + "/FCL/log";
         CACHE_DIR = context.getCacheDir() + "/fclauncher";
@@ -71,6 +74,7 @@ public class FCLPath {
             externalFilesDir = new File(Environment.getExternalStorageDirectory(), "Android/data/" + context.getPackageName() + "/files");
         }
         PRIVATE_COMMON_DIR = new File(externalFilesDir, ".minecraft").getAbsolutePath();
+        PRIVATE_EXT_LIB_PATH_DIR = new File(externalFilesDir, "lib").getAbsolutePath();
 
         AUTHLIB_INJECTOR_PATH = PLUGIN_DIR + "/authlib-injector.jar";
         LIB_PATCHER_PATH = PLUGIN_DIR + "/MioLibPatcher.jar";
@@ -95,6 +99,8 @@ public class FCLPath {
         init(BACKGROUND_DIR);
         init(CONTROLLER_DIR);
         init(PRIVATE_COMMON_DIR);
+        init(PRIVATE_EXT_LIB_PATH_DIR);
+        init(DYNAMIC_NATIVE_LIB_DIR);
         init(SHARED_COMMON_DIR);
     }
 
